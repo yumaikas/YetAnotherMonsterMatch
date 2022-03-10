@@ -13,8 +13,13 @@
 
 (fn *= [x expr] `(set ,x (* ,x ,expr)))
 
-(fn imp [name]
-  `(local ,name (require ,(tostring name))))
+(fn imp [...]
+  (let [names [...]
+        binds (icollect [_ n (ipairs names) :into `[]] n)
+        reqs (icollect [_ n (ipairs names) :into `[]] `(require ,(tostring n)))
+        ] 
+
+  `(local ,binds ,reqs)))
 
 (fn req [name path]
   `(local ,name (require ,path)))

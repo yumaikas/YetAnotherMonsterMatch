@@ -21,7 +21,7 @@
   (each [_ c (ipairs me.children)] (c:update dt)))
 
 (fn make []
-  (let [matcher (match-engine.make [10 40] [7 7])]
+  (let [matcher (match-engine.make [10 40] [8 8])]
     {
      :children [matcher]
      :pos [40 40]
