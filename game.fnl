@@ -46,7 +46,7 @@
   ; Make these configurable?
   (gfx.setLineStyle :rough)
   ; TODO: Switch to none
-  (gfx.setLineJoin :miter)
+  (gfx.setLineJoin :none)
   (gfx.setLineWidth 1)
 
   (let [start (scenes.get :title)]

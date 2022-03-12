@@ -11,7 +11,7 @@
   (gfx.origin)
   (gfx.setColor [0.4 0.4 1])
   (gfx.setFont assets.font)
-  (gfx.print "MONSTER MATCH" 20 20)
+  (gfx.print "YET ANOTHER MONSTER MATCH" 20 20)
   (each [_ c (ipairs me.children)] (c:draw)))
 
 (fn update [me dt]
