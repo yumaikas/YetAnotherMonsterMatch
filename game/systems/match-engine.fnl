@@ -12,10 +12,73 @@
 ; Ghouls -> souls
 ; Zombies -> brains *
 ; Werewolves -> Moons *
+; Bombs?
+; 
 ; Dracula
 ; Igor
 
 
+(fn set-2d [t i j v] 
+  (if (= (type (. t i)) :table)
+    (tset t i j v)
+    (tset t i { j v })))
+
+
+; Returns a list of cells that need to be removed
+; and a list of cells that need to be placed
+(fn scan-board [cells] 
+  (local [nr nc] cells.dims)
+  (local lines {})
+  (local cols {})
+
+  (each [r (range 1 nr)]
+    (var line [])
+    (each [c (range 1 nc)]
+      (let [
+            prev-cell (?. cells r (- 1 c))
+            cell (?. cells r c)
+            same? 
+            (and prev-cell cell (= prev-cell.name cell.name))
+            streak (length line) ] 
+        (if 
+          (and same? (f.empty? line))
+          (do 
+            (table.insert line prev-cell)
+            (table.insert line cell))
+
+          same?  (table.insert line cell)
+
+          (and (not same?) (>= 3 streak))
+          (each [marked (iter line)]
+            (set-2d lines (unpack marked.loc) line))
+          )
+        )
+      ))
+
+  (each [c (range 1 nc)]
+    (var col [])
+    (each [r (range 1 nr)]
+      (let [
+            prev-cell (?. cells (- r 1) c)
+            cell (?. cells r c)
+            same? 
+            (and prev-cell cell (= prev-cell.name cell.name))
+            streak (length col) ] 
+        (if 
+          (and same? (f.empty? col))
+          (do 
+            (table.insert col prev-cell)
+            (table.insert col cell))
+
+          same?  (table.insert cols cell)
+
+          (and (not same?) (>= 3 streak))
+          (each [marked (iter col)]
+            (set-2d cols (unpack marked.loc) col))
+          )
+        )
+      ))
+  )
 
 (fn update [me dt]
   (let [(mxp myp) (gfx.inverseTransformPoint (love.mouse.getPosition))
@@ -53,8 +116,9 @@
         ))
     ))
 
-(fn make-cell [proto]
+(fn make-cell [proto r c]
   {
+   :loc [r c]
    :name proto.name
    :image proto.image
    }
@@ -63,7 +127,7 @@
 (fn make-cells [cols rows protos] 
   (icollect [r (range 1 rows)]
     (icollect [c (range 1 cols)]
-      (make-cell (f.pick-rand protos)))))
+      (make-cell (f.pick-rand protos r c)))))
 
 (fn cell-protos [] 
   [
