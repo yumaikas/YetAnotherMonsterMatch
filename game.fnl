@@ -42,7 +42,6 @@
             ])]
     (scenes.set name (require r)))
 
-  (love.math.setRandomSeed (love.timer.getTime))
   ; Make these configurable?
   (gfx.setLineStyle :rough)
   ; TODO: Switch to none
