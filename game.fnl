@@ -43,10 +43,10 @@
     (scenes.set name (require r)))
 
   ; Make these configurable?
-  (gfx.setLineStyle :rough)
+  (gfx.setLineStyle :smooth)
   ; TODO: Switch to none
   (gfx.setLineJoin :none)
-  (gfx.setLineWidth 1)
+  (gfx.setLineWidth 2)
 
   (let [start (scenes.get :title)]
   (set MODE (start.make true)
