@@ -1,5 +1,5 @@
 (import-macros { : imp : req : += : -= : *= : unless : gfx-at } :m)
-(imp v f assets)
+(imp v f assets scenes)
 (imp flux)
 (req {: iter : range} :f)
 (req blood-drop :game.vectors.blood-drop)
@@ -43,11 +43,41 @@
     (set ret.rolled true)
     ret))
 
+(local dirs [[0 1] [0 -1] [1 0] [-1 0]])
+
+(fn count-in [cells [r c] dir] 
+  (let [cell (?. cells r c)]
+    (if cell
+      (let [ [r2 c2] (v.add [r c] dir)
+            next-cell (?. cells r2 c2) ]
+        (if (and next-cell (= next-cell.name cell.name))
+          [cell.name 2]
+          [cell.name 1]
+          ))
+      [nil 0]
+      )))
+
+(fn sum-cell [cells r c] 
+  (local color-sum {})
+  (each [dir (iter dirs)]
+    (let [[color num] (count-in cells (v.add [r c] dir) dir)]
+      (when color
+        (tset color-sum color (+ (or (?. color-sum color) 0) num)))))
+  color-sum)
+  
+
+(fn get-hints [cells [nr nc]]
+  (var hints [])
+
+  (each [r (range 1 nr)]
+    (each [c (range 1 nc)]
+      (when (f.any? (icollect [_ num (pairs (sum-cell cells r c))] num) #(> $ 2))
+        (table.insert hints [r c]))))
+  hints)
 
 ; Returns a list of cells that need to be removed
 ; and a list of cells that need to be placed
 (fn scan-board [cells [nr nc]] 
-  (print (view [nr nc]))
   (local lines {})
   (local cols {})
 
@@ -55,7 +85,6 @@
 
   (each [r (range 1 nr)]
     (var line [])
-    (print "")
     (each [c (range 1 nc)]
       (let [
             prev-cell (?. cells r (- c 1))
@@ -202,7 +231,7 @@
           (doto 
             (flux.to cell.loc (fall-time my-fall) [(+ r my-fall) c])
             (: :ease :elasticout)
-            (: :onupdate (fn [p] (when (> p 0.8) (fall-done))))
+            (: :onupdate (fn [p] (when (> p 0.4) (fall-done))))
             )
       )))
     (tset needed-per-col c total-fall))
@@ -214,7 +243,7 @@
         (put-cell cells r c cell)
         (doto (flux.to cell.loc (fall-time n) [r c])
               (: :ease :elasticout)
-              (: :onupdate (fn [p] (when (> p 0.8) (fall-done))))
+              (: :onupdate (fn [p] (when (> p 0.4) (fall-done))))
               )
       )
     ))
@@ -244,7 +273,13 @@
             ; TODO: Spawn 
             (put-cell me.cells r c nil)))))
 
-    (set-fall-grid me #(set me.scanned false))
+    (set me.hints (get-hints me.cells me.cell-dims))
+    (set me.has-moves (not (f.empty? me.hints)))
+    (set-fall-grid me (fn [] (set me.scanned false)
+                        (set me.hints (get-hints me.cells me.cell-dims))
+                        (set me.has-moves (not (f.empty? me.hints)))
+                        ))
+
     )
   )
 
@@ -256,8 +291,7 @@
                (math.ceil (/ mx 42))
                (math.ceil (/ my 42))
                ] 
-        cell (?. me.cells r c)
-        ]
+        cell (?. me.cells r c)]
 
     (unless me.scanned
       (let [scan (scan-board me.cells me.cell-dims)]
@@ -267,6 +301,8 @@
 
     (when (and love.mouse.isJustPressed)
       (if
+        (and (not me.has-moves) (= c 8) (= r 8))
+        (set me.failed true) 
         (and cell me.picked (<= (v.dist me.picked.coord cell.coord) 1))
         ; v.add as a hacky copy
         (let [a me.picked
@@ -294,6 +330,8 @@
 
                  ))
             )
+          (set me.hl.hl false)
+          (set me.hl false)
           (set me.picked.picked false)
           (set me.picked false)
           )
@@ -340,9 +378,20 @@
                       (if cell.offset
                         (cell.image:draw-at (v.add [21 21] cell.offset))
                         (cell.image:draw-at [21 21])
-                        ))
+                        )
+                      )
               )))) 
       ; Debug prints here
+      (when me.hl
+        (let [data (sum-cell me.cells (unpack me.hl.coord))]
+            (gfx.print (view data) 10 470)
+            (gfx.print (view me.hl.coord) 10 440)
+            ))
+
+      (when (not me.has-moves)
+        (gfx.setColor [1 0 0])
+        (gfx.print "Out of Moves" 30 500)
+        (gfx.print "Tap on [8 8] to restart" 30 530))
 
       )))
 
@@ -388,7 +437,7 @@
    :drag-begin false
    :hl false
    :picked false
-
+   :failed false
    : update
    : draw
    }

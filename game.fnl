@@ -35,7 +35,12 @@
 
 (var effect nil)
 
+(var init-off [0 0])
+
 (fn love.load [] 
+  (let [(sx sy) (love.window.getSafeArea)]
+    (set init-off [sx sy]))
+   
   (each [_ [name r] 
          (ipairs 
            [[:title :game.scenes.title] 
@@ -56,6 +61,7 @@
 
   ;(love.graphics.print (love.timer.getFPS) 10 10)
   (gfx.push)
+  (gfx.translate (. init-off 1) (. init-off 2))
   (when MODE.draw (MODE:draw))
   (gfx.pop))
 
