@@ -112,6 +112,7 @@
             (set has-match true)
             (each [marked (iter line)]
               (let [[r c] marked.coord]
+
                 (set-2d lines r c line)))
             (set line [])
             )
@@ -255,15 +256,31 @@
   (let [{: lines : cols } scan
         [nr nc] me.cell-dims ]
 
+
+    (var num-cells 0)
     (each [r row (pairs lines)]
       (each [l line (pairs row)]
         (each [c cell (pairs line)]
-          (set cell.matched true)))) 
+          (when (not cell.matched)
+            (+= num-cells  1))
+          (set cell.matched true))
+        )
+      ) 
 
     (each [r row (pairs cols)]
       (each [l line (pairs row)]
         (each [c cell (pairs line)]
-        (set cell.matched true)))) 
+          (when (not cell.matched)
+            (+= num-cells 1))
+          (set cell.matched true))) )
+
+    (let [now-score (math.floor (+ 
+                               (* 10 num-cells) 
+                               (math.max 0 (* (- num-cells 3) 20))
+                               (math.max 0 (* (- num-cells 5) 50))))]
+      (when (> now-score 0)
+        (set me.last-score now-score)
+        (+= me.score now-score)))
 
     (each [r (range 1 nr)]
       (each [c (range 1 nc)]
@@ -382,16 +399,11 @@
                       )
               )))) 
       ; Debug prints here
-      (when me.hl
+      (when (and me.debug me.hl)
         (let [data (sum-cell me.cells (unpack me.hl.coord))]
             (gfx.print (view data) 10 470)
             (gfx.print (view me.hl.coord) 10 440)
             ))
-
-      (when (not me.has-moves)
-        (gfx.setColor [1 0 0])
-        (gfx.print "Out of Moves" 30 500)
-        (gfx.print "Tap on [8 8] to restart" 30 530))
 
       )))
 
@@ -432,8 +444,11 @@
    :cell-dims [num-cols num-rows]
    :protos images
    :cells cells
+   :score 0
+   :last-score 0
    : pos 
    :cursor false
+   :has-moves true
    :drag-begin false
    :hl false
    :picked false

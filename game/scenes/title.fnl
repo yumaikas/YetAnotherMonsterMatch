@@ -1,7 +1,8 @@
 (import-macros { : imp : req : += : -= : *= : unless } :m)
-(imp v) (imp f) (imp assets) (imp fennel)
+(imp v f assets fennel scenes)
 
-(req match-engine :game.systems.match-engine)
+(req ui :ui)
+(req menu :ui.menu)
 
 (local random love.math.random)
 (local noise love.math.noise)
@@ -9,26 +10,37 @@
 
 (fn draw [me] 
   (gfx.origin)
-  (gfx.setColor [0.4 0.4 1])
-  (gfx.setFont assets.font)
-  (gfx.print "YET ANOTHER MONSTER MATCH" 20 20)
-  (each [_ c (ipairs me.children)] (c:draw)))
+  (each [_ c (ipairs me.children)] (c:draw))
+  )
 
 (fn update [me dt]
-  (if love.mouse.isJustPressed
-    (do))
-
   (each [_ c (ipairs me.children)] (c:update dt)))
 
+(fn start-classic [me]
+  (let [n (scenes.get :classic)]
+    (set me.next (n.make))))
+
 (fn make []
-  (let [matcher (match-engine.make [10 40] [8 8])]
-    {
-     :children [matcher]
-     :pos [40 40]
-     :next false
-     : update
-     : draw
-     }))
+  (let [
+        me {}
+        start-btn (menu.button [80 200] assets.big-font "PLAY" (fn [] (start-classic me)))
+        ui (ui.make-layer [
+                           (menu.text [30 30] assets.title-font [
+                                                                 [1 1 0] "Y"
+                                                                 [1 0.5 0.2] "A"
+                                                                 [1 0.47 1] "M"
+                                                                 [0.7 0.7 0.7] "M"
+                                                                 ] )
+                           start-btn])
+        ]
+    (f.merge! 
+      me 
+      {
+       :children [ui]
+       :next false
+       : update
+       : draw
+       })))
 
 {: make}
 

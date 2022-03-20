@@ -41,11 +41,10 @@
   (let [(sx sy) (love.window.getSafeArea)]
     (set init-off [sx sy]))
    
-  (each [_ [name r] 
-         (ipairs 
-           [[:title :game.scenes.title] 
-            ])]
-    (scenes.set name (require r)))
+  (each [_ p (ipairs (love.filesystem.getDirectoryItems "game/scenes"))]
+    (let [(_ _ name) (p:find "(%w+)%.fnl$")]
+      (scenes.set name (require (.. "game.scenes." name)))
+      ))
 
   ; Make these configurable?
   (gfx.setLineStyle :smooth)

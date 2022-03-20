@@ -10,22 +10,22 @@ $paths = ls | ? { -not(($_.FullName -ilike "*love-bins*") `
 
 echo $paths
 
-ls -Recurse .\publish\faultLines\ | Remove-Item -Recurse -Force 
+ls -Recurse .\publish\yamm\ | Remove-Item -Recurse -Force 
 
 # New-Item .\publish\faultLines\ -ItemType Directory
-Remove-Item -Recurse -Force .\publish\faultLines.love
-Compress-Archive $paths publish\faultLines.love
+Remove-Item -Recurse -Force .\publish\yamm.love
+Compress-Archive $paths publish\yamm.love
 
 Push-location publish\
-"Yet Another Monster Match" | npx love.js faultLines.love faultLines -c -m (16777216*2)
+"Yet Another Monster Match" | npx love.js yamm.love yamm -c -m (16777216*2)
 
 
 # Uncomment once customization becomes a thing
 # Copy-Item ..\projects\html\index.html .\faultLines\index.html
 # Copy-Item ..\projects\html\love.css .\faultLines\love.css
 
-cd faultLines
-Compress-Archive -Force (ls) ..\faultLines.zip
+cd yamm
+Compress-Archive -Force (ls) ..\yamm.zip
 
 if ($serve) {
 web-dir

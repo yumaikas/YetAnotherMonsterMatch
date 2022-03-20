@@ -147,10 +147,16 @@
       (set vstate i)
       v)))
 
+(fn merge! [to from]
+  (each [k v (pairs from)]
+    (tset to k v))
+  to)
+
 {
  : pp
  : find
  : index-of
+ : merge!
  : all?
  : any?
  : function?
