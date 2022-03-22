@@ -61,6 +61,7 @@
   ;(love.graphics.print (love.timer.getFPS) 10 10)
   (gfx.push)
   (gfx.translate (. init-off 1) (. init-off 2))
+  (gfx.clear 0.1 0.1 0.1)
   (when MODE.draw (MODE:draw))
   (gfx.pop))
 

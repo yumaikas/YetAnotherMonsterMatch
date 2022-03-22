@@ -41,6 +41,10 @@
         ]
     ret))
 
+(fn color-of-hex [hex-str] 
+  (let [(r g b) (hex-str:match "^(%x%x)(%x%x)(%x%x)$")] 
+    (f.map.i [r g b] (fn [s] (/ (tonumber s 16) 255)))))
+
 
 
 (lambda draw [data] 
@@ -91,4 +95,4 @@
    :draw-at (fn [me pos] (gfx-at pos (draw me.shapes)))
    }))
 
-{ : draw : draw-switch-color : center-norm : corner-norm }
+{ : draw : draw-switch-color : center-norm : corner-norm : color-of-hex }

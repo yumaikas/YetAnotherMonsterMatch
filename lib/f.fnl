@@ -180,6 +180,7 @@
  : range
  : iter
  : clamp
+ : even?
  : pick-rand
  : pop-rand
  :map { :i (fn [tbl f] (icollect [_ el (ipairs tbl)] (f el)))

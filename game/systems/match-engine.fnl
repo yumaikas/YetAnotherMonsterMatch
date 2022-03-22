@@ -373,29 +373,41 @@
     )
   )
 
+(fn draw-reticle [pos ] 
+  (gfx-at 
+    pos
+    (gfx.line 0 0 4 4)
+    (gfx.line 40 0 36 4)
+    (gfx.line 40 40 36 36)
+    (gfx.line 0 40 4 36)
+  )) 
+
 (fn draw [me] 
   (let [ [cols rows] me.cell-dims ]
     (gfx-at 
       me.pos
+      (var ncell 1)
       (each [r  (range 1 rows)]
+        (+= ncell 1)
         (each [c (range 1 cols)]
-          (gfx-at [(* (- c 1) 42) (* (- r 1) 42)]
-                  (gfx.setColor [0 0.3 0])
-                  (gfx.rectangle :line 2 2 38 38))
+          (+= ncell 1)
           (let [cell (?. me.cells r c) ]
             (when cell
               (local [r c] cell.loc)
               (gfx-at [(* (- c 1) 42) (* (- r 1) 42)]
+                      (when (f.even? ncell)
+                        (gfx.setColor [0.1 0.1 0])
+                        (gfx.rectangle :fill 2 2 38 38))
+                      (if cell.offset
+                        (cell.image:draw-at (v.add [21 21] cell.offset))
+                        (cell.image:draw-at [21 21]))
                       (if 
                         cell.hl (gfx.setColor [0 1 0])
                         cell.matched (gfx.setColor [1 0 0])
                         cell.picked (gfx.setColor [1 1 1])
-                        (gfx.setColor [0 0.3 0]))
-                      (gfx.rectangle :line 2 2 38 38)
-                      (if cell.offset
-                        (cell.image:draw-at (v.add [21 21] cell.offset))
-                        (cell.image:draw-at [21 21])
-                        )
+                        (gfx.setColor [0.1 0.1 0]))
+                      (when (or cell.hl cell.picked) (draw-reticle [0 0]))
+
                       )
               )))) 
       ; Debug prints here

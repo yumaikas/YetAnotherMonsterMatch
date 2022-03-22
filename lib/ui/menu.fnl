@@ -5,6 +5,11 @@
 (local gfx love.graphics)
 (local {: annex } (require :ui))
 
+
+(fn color-of-hex [hex-str] 
+  (let [(r g b) (hex-str:match "^(%x%x)(%x%x)(%x%x)$")] 
+    (f.map.i [r g b] (fn [s] (/ (tonumber s 16) 255)))))
+
 ; Used to keep track that everything came from this module
 
 (fn update-button [button dt] 
@@ -22,6 +27,7 @@
             love.mouse.isJustPressed)
       (click)))
 
+(local hl-color (color-of-hex "465171"))
 (fn draw-button [button]
   (local (mx my) (love.mouse.getPosition))
   (local 
@@ -31,7 +37,7 @@
   (local x px)
   (local y py)
   (when (c.pt-in-rect? [mx my] [x y w h])
-    (gfx.setColor [ 1 0.5 1 ])
+    (gfx.setColor hl-color)
     (gfx.polygon :fill
                  [(- x 3) y
                   (+ x w) y
@@ -76,7 +82,7 @@
                   (+ x w) (+ y h)
                   (- x 3) (+ y h)]))
   (when (c.pt-in-rect? [mx my] [x y w h])
-    (gfx.setColor [ 1 0.5 1 ])
+    (gfx.setColor hl-color)
     (gfx.polygon :fill
                  [(- x 3) y
                   (+ x w) y
