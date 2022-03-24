@@ -344,10 +344,10 @@
                      (put-cell me.cells br bc b)
                      (doto (flux.to a.loc 0.3 (v.copy a.coord)) (: :ease :quadinout))
                      (doto (flux.to b.loc 0.3 (v.copy b.coord)) (: :ease :quadinout))))
-
                  ))
             )
-          (set me.hl.hl false)
+          (when (and me.hl me.hl.hl)
+            (set me.hl.hl false))
           (set me.hl false)
           (set me.picked.picked false)
           (set me.picked false)
@@ -395,9 +395,6 @@
             (when cell
               (local [r c] cell.loc)
               (gfx-at [(* (- c 1) 42) (* (- r 1) 42)]
-                      (when (f.even? ncell)
-                        (gfx.setColor [0.1 0.1 0])
-                        (gfx.rectangle :fill 2 2 38 38))
                       (if cell.offset
                         (cell.image:draw-at (v.add [21 21] cell.offset))
                         (cell.image:draw-at [21 21]))
@@ -407,7 +404,6 @@
                         cell.picked (gfx.setColor [1 1 1])
                         (gfx.setColor [0.1 0.1 0]))
                       (when (or cell.hl cell.picked) (draw-reticle [0 0]))
-
                       )
               )))) 
       ; Debug prints here
