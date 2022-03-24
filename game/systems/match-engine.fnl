@@ -12,15 +12,17 @@
 (req {: view } :fennel)
 (local gfx love.graphics)
 
-; Frankenstien -> Zaps *
-; Vampires -> blood *
-; Ghouls -> souls *
-; Zombies -> brains *
-; Werewolves -> Moons *
-; Skeletons -> Bones *
-; Magicians -> wands ?
+; Frankenstien -> Zaps -> Pick a cell, then pick 3 colors to flood fill into and zap all of the attached cells
+; Vampires -> blood -> Pick cell to turn to blood, adjacent cells of the same color on diagonal also turn to blood
+; Ghouls -> souls -> Soul Eater (pick X cells to nil out for points)
+; Zombies -> brains -> Telekinesis (aka drag-swap-no-match mode)
+; Werewolves -> Moons -> Were-moon (can match with anything, does not fall, "eats" on match, lasts X matchess)
+; Skeletons -> Bones -> Swap one of a color, swap all of the rest in the same direction, if possible
+; Magicians -> wands (switch to books?) -> Fireball (screen nuke, takes the most time to build)
 ; 
 ; Bombs?
+
+; What powerups can one get?
 ; 
 ; Dracula
 ; Igor
