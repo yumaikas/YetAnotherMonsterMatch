@@ -1,5 +1,6 @@
 (import-macros { : imp : req : += : -= : *= : unless : gfx-at } :m)
 (imp f)
+(req {: iter} :f)
 (local {: view } (require :fennel))
 (local gfx love.graphics)
 
@@ -61,6 +62,11 @@
       (gfx.setColor shape.color))
     (gfx.line shape.points))))
 
+
+(fn map-color [me map] 
+  (each [sh (iter me.shapes)] 
+    (set sh.color (map sh.color))))
+
 (fn center-norm [data]
   (let [[x y w h] (get-bounds data)
         cx (/ w 2)
@@ -76,6 +82,7 @@
    :shapes data
    :dims [x y w h]
    :draw (fn [me] (draw me.shapes))
+   : map-color 
    :draw-at (fn [me pos] (gfx-at pos (draw me.shapes)))
    }))
 
@@ -91,6 +98,7 @@
   {
    :shapes data
    :dims [x y w h]
+   : map-color 
    :draw (fn [me] (draw me.shapes))
    :draw-at (fn [me pos] (gfx-at pos (draw me.shapes)))
    }))
