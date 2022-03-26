@@ -3,6 +3,7 @@
 (imp assets)
 (imp fennel)
 (imp scenes)
+(req options :game.systems.options)
 
 (local gfx love.graphics)
 
@@ -43,8 +44,8 @@
    
   (each [_ p (ipairs (love.filesystem.getDirectoryItems "game/scenes"))]
     (let [(_ _ name) (p:find "(%w+)%.fnl$")]
-      (scenes.set name (require (.. "game.scenes." name)))
-      ))
+      (scenes.set name (require (.. "game.scenes." name)))))
+  (options.set-scheme :low-contrast)
 
   ; Make these configurable?
   (gfx.setLineStyle :smooth)
@@ -61,7 +62,8 @@
   ;(love.graphics.print (love.timer.getFPS) 10 10)
   (gfx.push)
   (gfx.translate (. init-off 1) (. init-off 2))
-  (gfx.clear 0.1 0.1 0.1)
+  (gfx.clear (. (options.colors) :clear))
+
   (when MODE.draw (MODE:draw))
   (gfx.pop))
 

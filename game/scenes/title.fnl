@@ -16,14 +16,16 @@
 (fn update [me dt]
   (each [_ c (ipairs me.children)] (c:update dt)))
 
-(fn start-classic [me]
-  (let [n (scenes.get :classic)]
+(fn load-scene [me scene]
+  (let [n (scenes.get scene)]
     (set me.next (n.make))))
+
 
 (fn make []
   (let [
         me {}
-        start-btn (menu.button [80 200] assets.big-font "PLAY" (fn [] (start-classic me)))
+        start-btn (menu.button [95 206] assets.big-font "PLAY" (fn [] (load-scene me :classic)))
+        options-btn (menu.button [170 333] assets.big-font "OPTIONS" (fn [] (load-scene me :options)))
         ui (ui.make-layer [
                            (menu.text [30 30] assets.title-font [
                                                                  [1 1 0] "Y"
@@ -31,7 +33,9 @@
                                                                  [1 0.47 1] "M"
                                                                  [0.7 0.7 0.7] "M"
                                                                  ] )
-                           start-btn])
+                           start-btn
+                           options-btn
+                           ])
         ]
     (f.merge! 
       me 
