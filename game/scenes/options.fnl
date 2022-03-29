@@ -20,7 +20,7 @@
 (local schemes [:arcade :low-contrast :arcade])
 
 (fn switch-color [] 
-  (let [i (+  1 (f.index-of schemes (opts.scheme)))]
+  (let [i (+ 1 (f.index-of schemes (opts.scheme)))]
     (opts.set-scheme (. schemes i))))
 
 (fn load-scene [me scene]
@@ -42,7 +42,6 @@
                                        ])
                            (menu.button [80 160] assets.big-font [[1 1 1] "COLOR!"] #(switch-color))
                            (menu.button [110 240] assets.big-font "BACK" #(load-scene me :title))
-
 
                            ])
         ]

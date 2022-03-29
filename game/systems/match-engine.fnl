@@ -1,4 +1,5 @@
 (import-macros { : imp : req : += : -= : *= : unless : gfx-at } :m)
+(imp grid)
 (imp v f assets scenes)
 (imp flux)
 (req {: iter : range} :f)
@@ -48,10 +49,10 @@
 (local dirs [[0 1] [0 -1] [1 0] [-1 0]])
 
 (fn count-in [cells [r c] dir] 
-  (let [cell (?. cells r c)]
+  (let [cell (cells:at r c)]
     (if cell
       (let [ [r2 c2] (v.add [r c] dir)
-            next-cell (?. cells r2 c2) ]
+            next-cell (cells:at r2 c2) ]
         (if (and next-cell (= next-cell.name cell.name))
           [cell.name 2]
           [cell.name 1]
@@ -89,8 +90,8 @@
     (var line [])
     (each [c (range 1 nc)]
       (let [
-            prev-cell (?. cells r (- c 1))
-            cell (?. cells r c)
+            prev-cell (cells:at r (- c 1))
+            cell (cells:at r c)
             same?  (and prev-cell cell (= prev-cell.name cell.name))
             streak (length line) ] 
         (if 
@@ -114,7 +115,6 @@
             (set has-match true)
             (each [marked (iter line)]
               (let [[r c] marked.coord]
-
                 (set-2d lines r c line)))
             (set line [])
             )
@@ -134,8 +134,8 @@
     ; (print "")
     (each [r (range 1 nr)]
       (let [
-            prev-cell (?. cells (- r 1) c)
-            cell (?. cells r c)
+            prev-cell (cells:at (- r 1) c)
+            cell (cells:at r c)
             same?  (and prev-cell cell (= prev-cell.name cell.name))
             streak (length line) ] 
         (if 
@@ -187,15 +187,12 @@
       (<= x w)
       (<= y h))))
 
-(fn empty-cell? [cells r c] (not (?. cells r c)))
-
-
 (fn fall-time [dist] 
   (math.sqrt (/ (* 2 dist) 3.3)))
 
 ; Matching tset here
 (fn put-cell [cells r c cell] 
-  (tset cells r c cell)
+  (cells:put r c cell)
   (when cell
     (set cell.coord [r c])))
 
@@ -223,12 +220,11 @@
     (var total-fall 0)
     (each [r (range nr 1 -1)]
       (if 
-        (empty-cell? cells r c)
+        (not (cells:at r c))
         (+= total-fall 1)
         (> total-fall 0)
-        (let [cell (?. cells r c)
-              my-fall total-fall
-              ]
+        (let [cell (cells:at r c)
+              my-fall total-fall]
           (+= num-falling 1)
           (put-cell cells (+ r my-fall) c cell)
           (doto 
@@ -286,8 +282,8 @@
 
     (each [r (range 1 nr)]
       (each [c (range 1 nc)]
-        (let [cell (?. me.cells r c)
-              above (?. me.cells (- r 1) c) ]
+        (let [cell (me.cells:at r c)
+              above (me.cells:at (- r 1) c) ]
           (when cell.matched
             ; TODO: Spawn 
             (put-cell me.cells r c nil)))))
@@ -310,7 +306,7 @@
                (math.ceil (/ mx 42))
                (math.ceil (/ my 42))
                ] 
-        cell (?. me.cells r c)]
+        cell (me.cells:at r c)]
 
     (unless me.scanned
       (let [scan (scan-board me.cells me.cell-dims)]
@@ -393,7 +389,7 @@
         (+= ncell 1)
         (each [c (range 1 cols)]
           (+= ncell 1)
-          (let [cell (?. me.cells r c) ]
+          (let [cell (me.cells:at r c) ]
             (when cell
               (local [r c] cell.loc)
               (gfx-at [(* (- c 1) 42) (* (- r 1) 42)]
@@ -418,9 +414,11 @@
       )))
 
 (fn make-cells [cols rows protos] 
-  (icollect [r (range 1 rows)]
-    (icollect [c (range 1 cols)]
-      (make-cell (pick-proto protos) r c))))
+  (let [cells (grid.make cols rows)]
+    (each [r (range 1 rows)]
+      (each [c (range 1 cols)]
+        (put-cell cells r c (make-cell (f.pick-rand protos) r c))))
+    cells))
 
 
 (fn cell-protos [] 
@@ -439,15 +437,6 @@
   (let [images (cell-protos)
         cells (make-cells num-cols num-rows images)
         {: lines : cols } (scan-board cells [num-rows num-cols]) ]
-
-    (each [r row (pairs lines)]
-      (each [l line (pairs row)]
-        (each [c cell (pairs line)]
-          (set cell.matched true)))) 
-    (each [r row (pairs cols)]
-      (each [l line (pairs row)]
-        (each [c cell (pairs line)]
-        (set cell.matched true)))) 
 
   {
    :scanned false
