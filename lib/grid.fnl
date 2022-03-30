@@ -14,8 +14,6 @@
     (if (and (<= 1 x w) (<= 1 y h))
       (tset grid (+ (* w x) y) val)))
 
-
-
   { : at : put })
 
 { : make }

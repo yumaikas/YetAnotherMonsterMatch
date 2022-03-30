@@ -45,7 +45,6 @@
   (each [_ p (ipairs (love.filesystem.getDirectoryItems "game/scenes"))]
     (let [(_ _ name) (p:find "(%w+)%.fnl$")]
       (scenes.set name (require (.. "game.scenes." name)))))
-  (options.set-scheme :low-contrast)
 
   ; Make these configurable?
   (gfx.setLineStyle :smooth)

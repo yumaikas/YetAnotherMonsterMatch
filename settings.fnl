@@ -1,4 +1,5 @@
 (fn love.conf [t] 
+  (set t.identity "yamm")
   (set t.window.resizable false)
   (set t.window.minwidth 360)
   (set t.window.minheight 600)

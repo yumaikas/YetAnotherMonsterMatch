@@ -1,10 +1,13 @@
 (import-macros { : imp : req : += : -= : *= : unless : gfx-at } :m)
+(imp f)
+(req {: view } :fennel)
 (req {: color-of-hex} :vectron)
 (req brain :game.vectors.brain)
 (req blood :game.vectors.blood-drop)
 (req zap :game.vectors.zap)
 (req bone :game.vectors.bone)
 (req moon :game.vectors.moon)
+(local fs love.filesystem)
 
 (local arcade
   {
@@ -27,16 +30,26 @@
    :bone (color-of-hex "5D5E60")
    })
 
-(local options 
-  {
-   :scheme :arcade
-   :colors { : arcade 
-            : low-contrast }
-   })
+(fn load-settings []
+  (if (fs.getInfo "settings.txt")
+    (let [(settings n) (fs.read "settings.txt") ]
+      (collect [k v (settings:gfind "(%S+)[\t ]+(%S+)")]
+               k v))
+    {}))
 
-(fn set-scheme [to] 
-  (set options.scheme to)
-  (let [scheme (. options.colors to)]
+(fn save-settings [settings]
+  (let [results []]
+    (each [k v (pairs settings)]
+      (table.insert results (.. k " "))
+      (table.insert results (.. v "\r\n")))
+    (fs.write "settings.txt" (table.concat results "")))
+  )
+
+(local options 
+    { :colors { : arcade : low-contrast } }) 
+
+(fn apply-settings [settings]
+  (let [scheme (. options.colors settings.scheme)]
     (brain:map-color (fn [c] scheme.brain))
     (blood:map-color (fn [c] scheme.blood))
     (bone:map-color (fn [c] scheme.bone))
@@ -44,9 +57,21 @@
     (moon:map-color (fn [c] scheme.moon))
     ))
 
+(local settings
+  (let [
+        derp (load-settings)
+        ret (f.merge!  { :scheme :low-contrast } derp)]
+    (apply-settings ret)
+    ret))
+
+(fn set-scheme [to] 
+  (set settings.scheme to)
+  (save-settings settings)
+  (apply-settings settings))
+
 {
- :colors (fn [] (. options.colors options.scheme))
- :scheme (fn [] options.scheme)
+ :colors (fn [] (. options.colors settings.scheme))
+ :scheme (fn [] settings.scheme)
  :set-scheme (fn [scheme] (if (. options.colors scheme)
                            (set-scheme scheme)
                            (error (.. "Unknown color scheme " scheme))))
