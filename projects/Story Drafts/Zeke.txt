@@ -1,83 +1,99 @@
+
 # Intros
 
 ## Sam and Zeke
-[In sillouete, a pickup truck bouncing down a dirt road]
+    
+    [Zeke and Sam start to catch up]
 
-Zeke:
-	Welcome back home, Sam, how was the dance academy?
+    [In sillouete, a pickup truck bouncing down a dirt road]
 
-Sam:
-	It was a *haaard*, I don't know if I want to back, to be honest.
+    Zeke:
+        Welcome back home, Sam, how was the dance academy?
 
-Zeke:
-	Aw, don't talk like that. We're all rooting for you.
+    Sam:
+        It was a *haaard*, I don't know if I want to back, to be honest.
 
-	...
+    Zeke:
+        Aw, don't talk like that. We're all rooting for you.
 
-    Sounds like it's been rough though.
+        ...
 
-Sam:
+        Sounds like it's been rough though.
 
-	Yeah, it has been, dancing practice is brutal.
+    Sam:
+        Yeah, it has been, the practice is brutal, and I feel like a object on stage.
 
-	Glad you're throwing this year's community party. 
+        Glad you're throwing this year's community party. 
 
-Zeke:
-	Oh?
+    Zeke:
+        Oh?
 
-Sam:
+    Sam:
+        It'll be nice to just be in a crowd tonight.
 
-	It'll be nice to just be in a crowd tonight.
-
-[scene]
+    [scene]
 
 ## Zeke arc
+
+### Getting ready for the party
+
 1) Earlier that week, Zeke is gatherting party supplies. Folks do a lot of wishing him "good luck!". This causes him some grief.
-Sam: 
-	How's it been, getting ready for tonight?
-OVERLAY: Earlier that week
-[Zeke is at Wilma's General Store, with miscellaneous supplies]
 
-[Level: Gather supplies by matching them. etf run out of moves, ask Wilma for help finding something, this shuffles the board with at least one match, and spawns a powerup related to that item]
+    [Zeke and Sam talk about Zeke's prep for the party]
 
-Wilma: 
-	Thanks, see ya later, Zeke!
+    Sam: 
+        How's it been, getting ready for tonight?
 
-Zeke:
-	No problem, see you at the party?
+    OVERLAY: Earlier that week
 
-Wilma:
-	Sure thing! Won't be able to stay long, though.
+    [Zeke is at Wilma's General Store, with miscellaneous supplies]
 
-Store Patron:
-	Good luck with the party, Zeke!
-*wispering*
-	especially after last year
+    [Level: Gather supplies by matching them. If player runs out of moves, ask Wilma for help finding something, this shuffles the board with at least one match, and spawns a powerup related to that item]
 
-[Back to Sam and Zeke]
+    Wilma: 
+        Thanks, see ya later, Zeke!
 
-Sam:
-	Oof
+    Zeke:
+        No problem, see you at the party?
 
-Zeke:
-	Yep, there was a lot of that when I went into town.
+    Wilma:
+        Sure thing! Won't be able to stay long, though.
 
-[Level: Unload supplies by matching over them, Sam helps out Zeke]
+    Store Patron:
+        Good luck with the party, Zeke!
+    *wispering*
+        especially after last year
+
+    [Back to Sam and Zeke]
+
+    Sam:
+        Oof
+
+    Zeke:
+        Yep, there was a lot of that when I went into town.
+
+    [Zeke and Sam arrive at the barn, Sam doesn't have a lot of luggage, they get ready to unload Zeke's pickup]
+
 
 2) Set up the barn with Sam's help (aka get to make two swaps at a time)
-	[TODO: Script interludes between Sam and Zeke?]
+
+    [Level: Unload supplies by matching over them, Sam helps out Zeke]
+
+        [TODO: Script interludes between Sam and Zeke?]
 
 3) After guests arrive, Zeke goes around and greets folks, the pressure is on, but most folks don't make note of it. Gina who is a bit bookish and awkard, does note that Zeke seems tense.
 
-[Level: Match cells so that folks to greet fall towards the bottom.]
+    [Level: Match cells so that folks to chat with fall towards the bottom.]
 
-Victor
-Sally
-Gina & Sam::: Zeke checks on Sam, since Sam and Gina have been talking a *lot*, Sam introduces Gina and Zeke, and then Sam and Gina go back to talking
-Wilma::: After saying hi to Zeke, has to leave.
+    ["Boss" level: Talking to Walton during the party (mechanics TBD)]
 
-Walton::: Exchange between Walton and Zeke is a tense, but ends with Walton congratulating Zeke on not messing up the party so far.
+    Victor::: 
+    Gina & Sam::: Zeke checks on Sam, since Sam and Gina have been talking a *lot*, Sam introduces Gina and Zeke, and then Sam and Gina go back to talking
+    Wilma::: After saying hi to Zeke, has to leave to go do store inventory
+    Sally:::
 
-4) 
+    Walton::: Exchange between Walton and Zeke is a tense, but ends with Walton congratulating Zeke on not messing up the party so far.
 
-5) Zeke cleans up the mess, notes odds and scraps and ends from the rest of the party
+4) Zeke cleans up the mess, notes odds and scraps and ends from the rest of the party
+
+[Level: Clean up mess by matching over it]
