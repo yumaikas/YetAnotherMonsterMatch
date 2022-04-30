@@ -1,3 +1,21 @@
+# Notes
+
+    Need to build up Walton as intimidating to Zeke, also make note of his favorite food, and/or maybe the "standards" of the party he expects.
+
+    Outline 
+
+    1) Zeke has picked up Sam from the train station, both are on a ride to Zeke's
+        - Talk about Sam's time at the Dance academy
+        - Talk about Zeke getting ready for the party
+            - Wilma splips Zeke a recipe for Walton's favorite party food?
+    2) Zeke and Sam get the barn set up for guests
+        - Zeke (the player) can set up two swaps
+        - Sam can swap diagnonally, and will try to help. He can be told to not make a given swap.
+    [time passes]
+    3) Zeke greets and chats with the party guests, except for Walton
+    4) Towards the end of the night, Zeke greets Walton, biting the social bullet, as it were.
+    5) Zeke cleans up after the party
+
 
 # Intros
 
@@ -11,7 +29,7 @@
         Welcome back home, Sam, how was the dance academy?
 
     Sam:
-        It was a *haaard*, I don't know if I want to back, to be honest.
+        It was a *haaard*, I don't know if I want to go back, to be honest.
 
     Zeke:
         Aw, don't talk like that. We're all rooting for you.
