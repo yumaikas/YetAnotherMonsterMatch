@@ -10,11 +10,13 @@ He has a *bat* that can walk more than you'd expect, and which he uses in his co
 
 Outline of Levels/events
 
-Outline 
+Progression 
 
-1) ...
-2) Have bat examine 
-3) Sneak around 
+1) Lurk around town, collecting gossip to get the tenor of the folks opinion on the party
+2) Discover and try work around Walton's warding hex on the barn, but stop when get topped off on blood by Zeke (who is being a good host)
+3) Have Bat sneak around Zeke's house, looking for potential leverage.
+4) Try to convince Gina to speak up along with him on the Vetrinary Medical Center.
+5) Retrieve Bat from the house without getting caught doing so.
 
 
 # Intro
