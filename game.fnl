@@ -1,8 +1,5 @@
 (import-macros { : imp : req : += : -= : *= : unless } :m)
-(imp v) (imp f)
-(imp assets)
-(imp fennel)
-(imp scenes)
+(imp v f flux assets fennel scenes)
 (req options :game.systems.options)
 
 (local gfx love.graphics)
@@ -73,6 +70,7 @@
       (love.event.quit))
     (tset love.keys.justPressed k nil))
 
+  (flux.update dt)
   (when MODE.update (MODE:update dt))
 
   (set love.mouse.isJustPressed false)

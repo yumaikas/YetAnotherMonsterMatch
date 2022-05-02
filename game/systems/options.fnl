@@ -32,6 +32,7 @@
 
 (fn load-settings []
   (if (fs.getInfo "settings.txt")
+    ; TODO: Consider the fs.lines iterator here
     (let [(settings n) (fs.read "settings.txt") ]
       (collect [k v (settings:gfind "(%S+)[\t ]+(%S+)")]
                k v))

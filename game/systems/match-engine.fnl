@@ -190,12 +190,6 @@
 (fn fall-time [dist] 
   (math.sqrt (/ (* 2 dist) 3.3)))
 
-; Matching tset here
-(fn put-cell [cells r c cell] 
-  (cells:put r c cell)
-  (when cell
-    (set cell.coord [r c])))
-
 (fn make-cell [proto r c]
   {
    :loc [r c]
@@ -226,7 +220,7 @@
         (let [cell (cells:at r c)
               my-fall total-fall]
           (+= num-falling 1)
-          (put-cell cells (+ r my-fall) c cell)
+          (cells:put (+ r my-fall) c cell)
           (doto 
             (flux.to cell.loc (fall-time my-fall) [(+ r my-fall) c])
             (: :ease :elasticout)
@@ -239,7 +233,7 @@
     (+= num-falling n)
     (each [r (range n 1 -1)]
       (let [cell (make-cell (pick-proto protos) (- r) c)]
-        (put-cell cells r c cell)
+        (cells:put r c cell)
         (doto (flux.to cell.loc (fall-time n) [r c])
               (: :ease :elasticout)
               (: :onupdate (fn [p] (when (> p 0.4) (fall-done))))
@@ -286,7 +280,7 @@
               above (me.cells:at (- r 1) c) ]
           (when cell.matched
             ; TODO: Spawn 
-            (put-cell me.cells r c nil)))))
+            (me.cells:put r c nil)))))
 
     (set me.hints (get-hints me.cells me.cell-dims))
     (set me.has-moves (not (f.empty? me.hints)))
@@ -294,12 +288,15 @@
                         (set me.hints (get-hints me.cells me.cell-dims))
                         (set me.has-moves (not (f.empty? me.hints)))
                         ))
-
     )
   )
 
+(fn anim-token-from-to [loc t target]
+  (doto
+    (flux.to loc t target)
+    (: :ease :quadinout)))
+
 (fn update [me dt]
-  (flux.update dt)
   (let [(mxp myp) (gfx.inverseTransformPoint (love.mouse.getPosition))
         [mx my]  (v.sub [mxp myp] me.pos)
         [c r]  [
@@ -319,29 +316,31 @@
         (and (not me.has-moves) (= c 8) (= r 8))
         (set me.failed true) 
         (and cell me.picked (<= (v.dist me.picked.coord cell.coord) 1))
-        ; v.add as a hacky copy
         (let [a me.picked
               b cell
-              [ar ac] (v.copy a.coord)
-              [br bc] (v.copy b.coord)
+              [ar ac] a.coord
+              [br bc] b.coord
               ] 
+          (anim-token-from-to 
+            a.loc 0.3 (v.copy b.coord))
           (doto
-            (flux.to a.loc 0.3 (v.copy b.coord))
-            (: :ease :quadinout))
-          (doto
-            (flux.to b.loc 0.3 (v.copy a.coord))
-            (: :ease :quadinout)
+            (anim-token-from-to
+              b.loc 0.3 (v.copy a.coord))
             (: :oncomplete 
                (fn [] 
-                 (put-cell me.cells ar ac b)
-                 (put-cell me.cells br bc a)
+                 (me.cells:put ar ac b)
+                 (me.cells:put br bc a)
                  (if (. (scan-board me.cells me.cell-dims) :has-changes)
                    (set me.scanned false)
                    (do
-                     (put-cell me.cells ar ac a)
-                     (put-cell me.cells br bc b)
-                     (doto (flux.to a.loc 0.3 (v.copy a.coord)) (: :ease :quadinout))
-                     (doto (flux.to b.loc 0.3 (v.copy b.coord)) (: :ease :quadinout))))
+                     (me.cells:put ar ac a)
+                     (me.cells:put br bc b)
+                     (doto 
+                       (flux.to a.loc 0.3 (v.copy a.coord)) 
+                       (: :ease :quadinout))
+                     (doto 
+                       (flux.to b.loc 0.3 (v.copy b.coord)) 
+                       (: :ease :quadinout))))
                  ))
             )
           (when (and me.hl me.hl.hl)
@@ -352,7 +351,7 @@
           )
         (= cell me.picked)
         (do 
-          (set me.picked.picked false)
+          (set cell.picked false)
           (set me.picked false))
         cell
         (do
@@ -371,7 +370,7 @@
     )
   )
 
-(fn draw-reticle [pos ] 
+(fn draw-reticle [pos] 
   (gfx-at 
     pos
     (gfx.line 0 0 4 4)
@@ -413,11 +412,16 @@
 
       )))
 
+
 (fn make-cells [cols rows protos] 
-  (let [cells (grid.make cols rows)]
+  (fn on-put [r c cell]
+    (when cell
+      (set cell.coord [r c])))
+
+  (let [cells (grid.make cols rows { : on-put })]
     (each [r (range 1 rows)]
       (each [c (range 1 cols)]
-        (put-cell cells r c (make-cell (f.pick-rand protos) r c))))
+        (cells:put r c (make-cell (f.pick-rand protos) r c))))
     cells))
 
 
