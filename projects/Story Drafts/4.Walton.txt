@@ -6,7 +6,11 @@ He and Victor have rival visions for the future of the Hamlet, though both have 
 
 He also wants the Zeke's party to go off without a hitch, so that the townsfolk will Move On and stop talking about The Incident.
 
-Outline of Levels/events
+Power: Walton can hex a color, making it disapper from the board
+
+Needs 6 matches to charge, combos help
+
+Outline
 
 1) Sally interrupts Walton's work on a hex to ask Walton if she can go to the Party
     - Level is work on hex before interruption.
