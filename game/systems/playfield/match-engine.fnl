@@ -178,6 +178,15 @@
    :has-changes has-match
    })
 
+(fn in-grid? [pos dims]
+  (let [[x y] pos
+        [w h] dims]
+    (and 
+      (>= x 1)
+      (>= y 1)
+      (<= x w)
+      (<= y h))))
+
 (fn fall-time [dist] 
   (math.sqrt (/ (* 2 dist) 3.3)))
 
@@ -201,7 +210,23 @@
 
   (local needed-per-col [])
 
-  (each [c (range nc 1 -1)]
+  (each [c col-iter (cells:up-by-cols)]
+    (var total-fall 0)
+    (each [r cell col-iter]
+      (if 
+        (not cell)
+        (+= total-fall 1)
+        (> total-fall 0)
+        (let [my-fall total-fall]
+          (+= num-falling 1)
+          (cells:put (+ r my-fall) c cell)
+          (doto
+            (flux.to cell.loc (fall-time my-fall) [(+ r my-fall) c])
+            (: :ease :elasticout)
+            (: :onupdate (fn [p] (when (> p 0.4) (fall-done))))))))
+    (tset needed-per-col c total-fall))
+
+  (comment each [c (range nc 1 -1)]
     (var total-fall 0)
     (each [r (range nr 1 -1)]
       (if 
@@ -265,13 +290,9 @@
         (set me.last-score now-score)
         (+= me.score now-score)))
 
-    (each [r (range 1 nr)]
-      (each [c (range 1 nc)]
-        (let [cell (me.cells:at r c)
-              above (me.cells:at (- r 1) c) ]
-          (when cell.matched
-            ; TODO: Spawn 
-            (me.cells:put r c nil)))))
+    (each [r c cell (me.cells:every-cell)]
+      (when cell.matched
+        (me.cells:put r c nil)))
 
     (set me.hints (get-hints me.cells me.cell-dims))
     (set me.has-moves (not (f.empty? me.hints)))
@@ -361,6 +382,14 @@
     )
   )
 
+(fn draw-reticle [pos] 
+  (gfx-at 
+    pos
+    (gfx.line 0 0 4 4)
+    (gfx.line 40 0 36 4)
+    (gfx.line 40 40 36 36)
+    (gfx.line 0 40 4 36)
+  )) 
 
 (fn draw [me] 
   (let [ [cols rows] me.cell-dims ]

@@ -1,7 +1,7 @@
 (import-macros { : imp : req : += : -= : *= : unless } :m)
 (imp v f assets fennel scenes)
 
-(req match-engine :game.systems.match-engine)
+(req match-engine :game.systems.playfield.match-engine)
 (req ui :ui)
 (req menu :ui.menu)
 

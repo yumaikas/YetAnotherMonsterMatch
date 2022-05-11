@@ -10,8 +10,10 @@
 (fn annex [tbl] 
   (tset tbl MODULE MODULE)
   (tset tbl :enabled true)
-  (print "XEH")
-  (print (view tbl))
+
+  (comment useful for debugging
+           (print "XEH")
+           (print (view tbl)))
   tbl)
 
 (fn pp [obj] (print (view obj)))
