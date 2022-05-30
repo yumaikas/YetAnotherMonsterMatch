@@ -226,25 +226,6 @@
             (: :onupdate (fn [p] (when (> p 0.4) (fall-done))))))))
     (tset needed-per-col c total-fall))
 
-  (comment each [c (range nc 1 -1)]
-    (var total-fall 0)
-    (each [r (range nr 1 -1)]
-      (if 
-        (not (cells:at r c))
-        (+= total-fall 1)
-        (> total-fall 0)
-        (let [cell (cells:at r c)
-              my-fall total-fall]
-          (+= num-falling 1)
-          (cells:put (+ r my-fall) c cell)
-          (doto 
-            (flux.to cell.loc (fall-time my-fall) [(+ r my-fall) c])
-            (: :ease :elasticout)
-            (: :onupdate (fn [p] (when (> p 0.4) (fall-done))))
-            )
-      )))
-    (tset needed-per-col c total-fall))
-
   (each [c n (ipairs needed-per-col)]
     (+= num-falling n)
     (each [r (range n 1 -1)]
