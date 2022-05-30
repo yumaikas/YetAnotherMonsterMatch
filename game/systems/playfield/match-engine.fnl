@@ -231,25 +231,24 @@
 
 
 (fn score-of-status-cell [me status] 
-  (print (view status))
   (match status
     { :score-count num-cells } 
-    (math.floor (me.combo 
-                  (+ (* 10 num-cells) 
-                     (math.max 0 (* (- num-cells 3) 20))
-                     (math.max 0 (* (- num-cells 5) 50)))))
+    (math.floor (* me.combo 
+                   (+ (* 10 num-cells) 
+                      (math.max 0 (* (- num-cells 3) 20))
+                      (math.max 0 (* (- num-cells 5) 50)))))
     _ 0))
 
 (fn score-and-match [me intersect]
   (var score 0)
   (each [r c status (intersect:every-cell)]
     (when status
-      (print (view [r c status]))
       (let [cell (me.cells:at r c)]
         (set cell.matched true)
-        (+= score (score-of-status-cell status))
-        (+= me.combo 1))))
-  (print (.. "SCORE: " score))
+        (+= score (score-of-status-cell me status))
+        ; Hacky way to handle keeping pre-matches from adding score
+        (when (> 0 me.combo)
+          (+= me.combo 1)))))
   score)
 
 (fn handle-scan [me scan] 
