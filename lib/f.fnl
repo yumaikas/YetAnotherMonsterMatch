@@ -147,6 +147,17 @@
       (set vstate i)
       v)))
 
+(fn head-iter [tbl]
+  (var (f s vstate) (ipairs tbl))
+  (let [(firsti firstv) (f s vstate)]
+    (set vstate firsti)
+
+  (values firstv
+          (fn []
+            (let [(i v) (f s vstate)]
+              (set vstate i)
+              v)))))
+
 (fn merge! [to from]
   (each [k v (pairs from)]
     (tset to k v))
@@ -179,6 +190,7 @@
  : uuid
  : range
  : iter
+ : head-iter
  : clamp
  : even?
  : pick-rand

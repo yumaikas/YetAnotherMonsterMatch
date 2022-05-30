@@ -2,7 +2,7 @@
 (imp grid)
 (imp v f assets scenes)
 (imp flux)
-(req {: iter : range} :f)
+(req { : head-iter : iter : range} :f)
 (req blood-drop :game.vectors.blood-drop)
 (req zap :game.vectors.zap)
 (req moon :game.vectors.moon)
@@ -78,14 +78,23 @@
         (table.insert hints [r c]))))
   hints)
 
+(fn ingest-line [into detected] 
+  (let [(first rest) (head-iter detected)
+        [r c] first.coord]
+    (into:put r c { :score-count (length detected) })
+    (each [marked rest]
+      (let [[r c] marked.coord]
+        (into:put r c true)))))
+
 ; Returns a list of cells that need to be removed
 ; and a list of cells that need to be placed
 (fn scan-board [cells [nr nc]] 
-  (local lines {})
-  (local cols {})
+  (local lines (grid.make nr nc))
+  (local cols (grid.make nr nc))
 
   (var has-match false)
 
+  ; TODO: Switch to using row-wise iterators
   (each [r (range 1 nr)]
     (var line [])
     (each [c (range 1 nc)]
@@ -113,21 +122,14 @@
           (do
             ; (io.write "END ")
             (set has-match true)
-            (each [marked (iter line)]
-              (let [[r c] marked.coord]
-                (set-2d lines r c line)))
+            (ingest-line lines line)
             (set line [])
-            )
-          )
-        )
-      )
+            ))))
+
       (when (<= 3 (length line))
         ; (io.write "END ")
         (set has-match true)
-        (each [marked (iter line)]
-          (let [[r c] marked.coord]
-            (set-2d lines r c line))))
-    )
+        (ingest-line lines line)))
 
   (each [c (range 1 nc)]
     (var line [])
@@ -157,9 +159,7 @@
           (do
             ; (io.write "END ")
             (set has-match true)
-            (each [marked (iter line)]
-              (let [[r c] marked.coord]
-                (set-2d cols r c line)))
+            (ingest-line cols line)
             (set line [])
             )
           )
@@ -168,9 +168,7 @@
       (when (<= 3 (length line))
         ; (io.write "END ")
         (set has-match true)
-        (each [marked (iter line)]
-          (let [[r c] marked.coord]
-            (set-2d lines r c line))))
+        (ingest-line cols line))
     )
 
   {: lines 
@@ -178,14 +176,6 @@
    :has-changes has-match
    })
 
-(fn in-grid? [pos dims]
-  (let [[x y] pos
-        [w h] dims]
-    (and 
-      (>= x 1)
-      (>= y 1)
-      (<= x w)
-      (<= y h))))
 
 (fn fall-time [dist] 
   (math.sqrt (/ (* 2 dist) 3.3)))
@@ -214,9 +204,8 @@
     (var total-fall 0)
     (each [r cell col-iter]
       (if 
-        (not cell)
-        (+= total-fall 1)
-        (> total-fall 0)
+        (not cell) (+= total-fall 1))
+      (if (and cell (> total-fall 0))
         (let [my-fall total-fall]
           (+= num-falling 1)
           (cells:put (+ r my-fall) c cell)
@@ -241,35 +230,40 @@
   needed-per-col)
 
 
+(fn score-of-status-cell [me status] 
+  (print (view status))
+  (match status
+    { :score-count num-cells } 
+    (math.floor (me.combo 
+                  (+ (* 10 num-cells) 
+                     (math.max 0 (* (- num-cells 3) 20))
+                     (math.max 0 (* (- num-cells 5) 50)))))
+    _ 0))
+
+(fn score-and-match [me intersect]
+  (var score 0)
+  (each [r c status (intersect:every-cell)]
+    (when status
+      (print (view [r c status]))
+      (let [cell (me.cells:at r c)]
+        (set cell.matched true)
+        (+= score (score-of-status-cell status))
+        (+= me.combo 1))))
+  (print (.. "SCORE: " score))
+  score)
+
 (fn handle-scan [me scan] 
   (let [{: lines : cols } scan
         [nr nc] me.cell-dims ]
 
+    (var now-score 
+      (+ 
+        (score-and-match me lines)
+        (score-and-match me cols)))
 
-    (var num-cells 0)
-    (each [r row (pairs lines)]
-      (each [l line (pairs row)]
-        (each [c cell (pairs line)]
-          (when (not cell.matched)
-            (+= num-cells  1))
-          (set cell.matched true))
-        )
-      ) 
-
-    (each [r row (pairs cols)]
-      (each [l line (pairs row)]
-        (each [c cell (pairs line)]
-          (when (not cell.matched)
-            (+= num-cells 1))
-          (set cell.matched true))) )
-
-    (let [now-score (math.floor (+ 
-                               (* 10 num-cells) 
-                               (math.max 0 (* (- num-cells 3) 20))
-                               (math.max 0 (* (- num-cells 5) 50))))]
-      (when (> now-score 0)
-        (set me.last-score now-score)
-        (+= me.score now-score)))
+    (when (> now-score 0)
+      (set me.last-score now-score)
+      (+= me.score now-score)))
 
     (each [r c cell (me.cells:every-cell)]
       (when cell.matched
@@ -280,9 +274,8 @@
     (set-fall-grid me (fn [] (set me.scanned false)
                         (set me.hints (get-hints me.cells me.cell-dims))
                         (set me.has-moves (not (f.empty? me.hints)))
-                        ))
-    )
-  )
+                        )))
+  
 
 (fn anim-token-from-to [loc t target]
   (doto
@@ -298,11 +291,6 @@
                ] 
         cell (me.cells:at r c)]
 
-    (unless me.scanned
-      (let [scan (scan-board me.cells me.cell-dims)]
-        (handle-scan me scan)
-        (set me.scanned true)
-      ))
 
     (when (and love.mouse.isJustPressed)
       (if
@@ -314,6 +302,7 @@
               [ar ac] a.coord
               [br bc] b.coord
               ] 
+          (set me.combo 1)
           (anim-token-from-to 
             a.loc 0.3 (v.copy b.coord))
           (doto
@@ -324,7 +313,9 @@
                  (me.cells:put ar ac b)
                  (me.cells:put br bc a)
                  (if (. (scan-board me.cells me.cell-dims) :has-changes)
-                   (set me.scanned false)
+                   (do 
+                     (set me.scanned false)
+                     (set me.combo 1))
                    (do
                      (me.cells:put ar ac a)
                      (me.cells:put br bc b)
@@ -353,6 +344,12 @@
           (set me.picked cell)
           (set cell.picked true)
           )))
+    (unless me.scanned
+      (let [scan (scan-board me.cells me.cell-dims)]
+        (handle-scan me scan)
+        (set me.scanned true)
+      ))
+
 
     (when me.hl
       (set me.hl.hl nil)
@@ -376,26 +373,20 @@
   (let [ [cols rows] me.cell-dims ]
     (gfx-at 
       me.pos
-      (var ncell 1)
-      (each [r  (range 1 rows)]
-        (+= ncell 1)
-        (each [c (range 1 cols)]
-          (+= ncell 1)
-          (let [cell (me.cells:at r c) ]
-            (when cell
-              (local [r c] cell.loc)
-              (gfx-at [(* (- c 1) 42) (* (- r 1) 42)]
-                      (if cell.offset
-                        (cell.image:draw-at (v.add [21 21] cell.offset))
-                        (cell.image:draw-at [21 21]))
-                      (if 
-                        cell.hl (gfx.setColor [0 1 0])
-                        cell.matched (gfx.setColor [1 0 0])
-                        cell.picked (gfx.setColor [1 1 1])
-                        (gfx.setColor [0.1 0.1 0]))
-                      (when (or cell.hl cell.picked) (draw-reticle [0 0]))
-                      )
-              )))) 
+      (each [r c cell (me.cells:every-cell)]
+        (when cell
+          (local [r c] cell.loc)
+          (gfx-at [(* (- c 1) 42) (* (- r 1) 42)]
+                  (if cell.offset
+                    (cell.image:draw-at (v.add [21 21] cell.offset))
+                    (cell.image:draw-at [21 21]))
+                  (if 
+                    cell.hl (gfx.setColor [0 1 0])
+                    cell.matched (gfx.setColor [1 0 0])
+                    cell.picked (gfx.setColor [1 1 1])
+                    (gfx.setColor [0.1 0.1 0]))
+                  (when (or cell.hl cell.picked) (draw-reticle [0 0]))
+                  )))
       ; Debug prints here
       (when (and me.debug me.hl)
         (let [data (sum-cell me.cells (unpack me.hl.coord))]
@@ -441,6 +432,7 @@
    :protos images
    :cells cells
    :score 0
+   :combo 0
    :last-score 0
    : pos 
    :cursor false

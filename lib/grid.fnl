@@ -22,7 +22,6 @@
   (fn dims [] [w h])
 
   (fn every-cell [me]
-    ; We ignore the first "row", and start a w
     (var c 0)
     (var r 1)
     (fn [] 
@@ -50,7 +49,7 @@
   (fn up-by-cols [me]
     (var c 1)
     (fn []
-      (var r h)
+      (var r (+ h 1))
       (when (<= c w)
         (values
           c 
