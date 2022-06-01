@@ -19,7 +19,30 @@
     (when (?. opts :on-put)
       (opts.on-put x y val)))
 
+  (fn update [me x y f]
+    (when (and 
+            (<= 1 x w)
+            (<= 1 y h))
+      (let [cell (?. grid x y)]
+        (tset grid x y (f cell))
+        (when (?. opts :on-put)
+          (opts.on-put x y cell))
+        (?. grid x y))))
+
   (fn dims [] [w h])
+
+  (local dirs [[0 1] [0 -1] [1 0] [-1 0]])
+
+  (fn around-point [me x y]
+    (var idx 0)
+    (fn []
+      (when (< idx (length dirs))
+        (set idx (+ idx 1))
+        (let [[dy dx] (. dirs idx)
+              ix (+ x dx)
+              iy (+ y dy) ]
+        (values ix iy (?. grid ix iy))
+        ))))
 
   (fn every-cell [me]
     (var c 0)
@@ -32,6 +55,24 @@
       (when 
         (<= r h)
         (values r c (?. grid r c)))))
+
+  (fn every-set-cell [me]
+    (var c 0)
+    (var r 1)
+    (fn [] 
+      ; Advance c and r until we find a set cell
+      (var keep-going true)
+      (while keep-going
+        (set c (+ c 1))
+        (when (> c w)
+          (set c 1)
+          (set r (+ r 1)))
+        (set keep-going 
+             (and (not (?. grid r c))
+                  (<= r h))))
+      (when (and (<= r h) (?. grid r c))
+        (values r c (?. grid r c)))
+      ))
 
   (fn by-rows [me]
     (var r 1)
@@ -61,7 +102,7 @@
                 (set c (+ c 1)) 
                 nil)))))))
 
-  { : at : put  : dims : every-cell : by-rows : up-by-cols })
+  { : at : put : dims : every-cell : every-set-cell : by-rows : up-by-cols : update : around-point })
 
 (fn test []
   (let [g (make 4 6)]

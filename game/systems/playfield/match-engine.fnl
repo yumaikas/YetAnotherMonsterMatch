@@ -29,12 +29,6 @@
 ; Igor
 
 
-(fn set-2d [t i j v] 
-  (if (= (type (. t i)) :table)
-    (tset t i j v)
-    (tset t i { j v })))
-
-
 (fn pick-proto [protos] 
   (f.pick-rand protos))
 
@@ -233,10 +227,15 @@
 (fn score-of-status-cell [me status] 
   (match status
     { :score-count num-cells } 
-    (math.floor (* me.combo 
-                   (+ (* 10 num-cells) 
-                      (math.max 0 (* (- num-cells 3) 20))
-                      (math.max 0 (* (- num-cells 5) 50)))))
+    (let [score (math.floor 
+                  (* me.combo 
+                     (+ (* 10 num-cells) 
+                        (math.max 0 (* (- num-cells 3) 20))
+                        (math.max 0 (* (- num-cells 5) 50)))))]
+      ; Hacky way to handle keeping pre-matches from adding score
+      (when (> me.combo 0)
+        (+= me.combo 1))
+      score)
     _ 0))
 
 (fn score-and-match [me intersect]
@@ -246,9 +245,7 @@
       (let [cell (me.cells:at r c)]
         (set cell.matched true)
         (+= score (score-of-status-cell me status))
-        ; Hacky way to handle keeping pre-matches from adding score
-        (when (> 0 me.combo)
-          (+= me.combo 1)))))
+        )))
   score)
 
 (fn handle-scan [me scan] 
@@ -281,81 +278,90 @@
     (flux.to loc t target)
     (: :ease :quadinout)))
 
+(fn swap-then-scan-cells [me [ar ac] [br bc]]
+  (let [a (me.cells:at ar ac)
+        b (me.cells:at br bc) ] 
+
+    (set me.combo 1)
+    (anim-token-from-to 
+      a.loc 0.3 (v.copy b.coord))
+    (doto
+      (anim-token-from-to
+        b.loc 0.3 (v.copy a.coord))
+      (: :oncomplete 
+         (fn [] 
+           (me.cells:put ar ac b)
+           (me.cells:put br bc a)
+           (if (. (scan-board me.cells me.cell-dims) :has-changes)
+             (do 
+               (set me.scanned false)
+               (set me.combo 1))
+             (do
+               (me.cells:put ar ac a)
+               (me.cells:put br bc b)
+               (doto 
+                 (flux.to a.loc 0.3 (v.copy a.coord)) 
+                 (: :ease :quadinout))
+               (doto 
+                 (flux.to b.loc 0.3 (v.copy b.coord)) 
+                 (: :ease :quadinout))))
+           ))
+      )
+    )
+  )
+
+(fn unpick [cell] 
+  (when cell
+    (set cell.picked nil))
+  cell)
+
+(fn highlight-cell [cell]
+  (let [c (or cell {})]
+    (set c.hl true)
+    c))
+
+
 (fn update [me dt]
+  (each [r c cell (me.cursor:every-set-cell)]
+    (when (and cell.hl (not cell.picked))
+      (me.cursor:put r c nil)))
+
   (let [(mxp myp) (gfx.inverseTransformPoint (love.mouse.getPosition))
         [mx my]  (v.sub [mxp myp] me.pos)
         [c r]  [
                (math.ceil (/ mx 42))
                (math.ceil (/ my 42))
                ] 
-        cell (me.cells:at r c)]
+        cursor (me.cursor:update r c highlight-cell)
+        ]
 
+    ; Make sure that we have a cursor present to handle these clicks
+    (when (and love.mouse.isJustPressed cursor)
+      (set cursor.picked true)
+      (var b nil)
+      (each [ir ic cell (me.cursor:around-point r c)]
+        (when (and (not b) (?. cell :picked))
+          (set b [ir ic])))
 
-    (when (and love.mouse.isJustPressed)
-      (if
-        (and (not me.has-moves) (= c 8) (= r 8))
-        (set me.failed true) 
-        (and cell me.picked (<= (v.dist me.picked.coord cell.coord) 1))
-        (let [a me.picked
-              b cell
-              [ar ac] a.coord
-              [br bc] b.coord
-              ] 
-          (set me.combo 1)
-          (anim-token-from-to 
-            a.loc 0.3 (v.copy b.coord))
-          (doto
-            (anim-token-from-to
-              b.loc 0.3 (v.copy a.coord))
-            (: :oncomplete 
-               (fn [] 
-                 (me.cells:put ar ac b)
-                 (me.cells:put br bc a)
-                 (if (. (scan-board me.cells me.cell-dims) :has-changes)
-                   (do 
-                     (set me.scanned false)
-                     (set me.combo 1))
-                   (do
-                     (me.cells:put ar ac a)
-                     (me.cells:put br bc b)
-                     (doto 
-                       (flux.to a.loc 0.3 (v.copy a.coord)) 
-                       (: :ease :quadinout))
-                     (doto 
-                       (flux.to b.loc 0.3 (v.copy b.coord)) 
-                       (: :ease :quadinout))))
-                 ))
-            )
-          (when (and me.hl me.hl.hl)
-            (set me.hl.hl false))
-          (set me.hl false)
-          (set me.picked.picked false)
-          (set me.picked false)
-          )
-        (= cell me.picked)
-        (do 
-          (set cell.picked false)
-          (set me.picked false))
-        cell
-        (do
-          (when me.picked
-            (set me.picked.picked false))
-          (set me.picked cell)
-          (set cell.picked true)
-          )))
+      (when b
+        (let [[ir ic] b]
+          (me.cursor:update r c unpick)
+          (me.cursor:update ir ic unpick)
+          (swap-then-scan-cells me [r c] [ir ic])))
+
+      ; Clear :picked on any cell that is not the currently picked cell
+      (each [ir ic cell (me.cursor:every-set-cell)]
+        (when (and 
+                (?. cell :picked)
+                (not= cell cursor))
+          (me.cursor:update ir ic unpick)))
+      )
+
     (unless me.scanned
       (let [scan (scan-board me.cells me.cell-dims)]
         (handle-scan me scan)
         (set me.scanned true)
       ))
-
-
-    (when me.hl
-      (set me.hl.hl nil)
-      (set me.hl nil))
-    (when cell
-      (set me.hl cell)
-      (set cell.hl true))
     )
   )
 
@@ -368,24 +374,32 @@
     (gfx.line 0 40 4 36)
   )) 
 
+(fn draw-cell [cell]
+  (local [r c] cell.loc)
+  (gfx-at [(* (- c 1) 42) (* (- r 1) 42)]
+          (if cell.offset
+            (cell.image:draw-at (v.add [21 21] cell.offset))
+            (cell.image:draw-at [21 21]))))
+
 (fn draw [me] 
   (let [ [cols rows] me.cell-dims ]
     (gfx-at 
       me.pos
       (each [r c cell (me.cells:every-cell)]
-        (when cell
-          (local [r c] cell.loc)
+        (when cell (draw-cell cell)))
+
+      (each [r c cell (me.cursor:every-set-cell)]
+        (if
+          (?. cell :picked)
           (gfx-at [(* (- c 1) 42) (* (- r 1) 42)]
-                  (if cell.offset
-                    (cell.image:draw-at (v.add [21 21] cell.offset))
-                    (cell.image:draw-at [21 21]))
-                  (if 
-                    cell.hl (gfx.setColor [0 1 0])
-                    cell.matched (gfx.setColor [1 0 0])
-                    cell.picked (gfx.setColor [1 1 1])
-                    (gfx.setColor [0.1 0.1 0]))
-                  (when (or cell.hl cell.picked) (draw-reticle [0 0]))
-                  )))
+                  (gfx.setColor [1 1 1])
+                  (draw-reticle [0 0]))
+          (?. cell :hl)
+          (gfx-at [(* (- c 1) 42) (* (- r 1) 42)]
+                  (gfx.setColor [0 1 0])
+                  (draw-reticle [0 0])))
+        )
+
       ; Debug prints here
       (when (and me.debug me.hl)
         (let [data (sum-cell me.cells (unpack me.hl.coord))]
@@ -430,11 +444,11 @@
    :cell-dims [num-cols num-rows]
    :protos images
    :cells cells
+   :cursor (grid.make num-cols num-rows)
    :score 0
    :combo 0
    :last-score 0
    : pos 
-   :cursor false
    :has-moves true
    :drag-begin false
    :hl false
