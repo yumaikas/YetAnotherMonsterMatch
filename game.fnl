@@ -40,7 +40,7 @@
     (set init-off [sx sy]))
    
   (each [_ p (ipairs (love.filesystem.getDirectoryItems "game/scenes"))]
-    (let [(_ _ name) (p:find "(%w+)%.fnl$")]
+    (let [(_ _ name) (p:find "([-%w]+)%.fnl$")]
       (scenes.set name (require (.. "game.scenes." name)))))
 
   ; Make these configurable?
@@ -65,10 +65,8 @@
 
 (fn love.update [dt]
 
-  (each [k (pairs love.keys.justPressed)]
-    (when (= k :escape)
-      (love.event.quit))
-    (tset love.keys.justPressed k nil))
+  (when (. love.keys.justPressed :escape)
+    (love.event.quit))
 
   (flux.update dt)
   (when MODE.update (MODE:update dt))
@@ -76,6 +74,9 @@
   (set love.mouse.isJustPressed false)
   (set love.mouse.isJustReleased false)
   (set love.mouse.delta nil)
+
+  (each [k (pairs love.keys.justPressed)]
+    (tset love.keys.justPressed k nil))
 
   (when MODE.next
     (set MODE MODE.next)))

@@ -39,8 +39,13 @@
         score-txt (menu.text [85 390] assets.font "0")
         last-score-label (menu.text [20 420] assets.font [[1 1 1] "MOVE SCORE: "])
         last-score-txt (menu.text [140 420] assets.font "0")
-        ui (ui.make-layer [try-again-btn menu-btn score-label score-txt last-score-label last-score-txt ])
-        ]
+        ui (ui.make-layer 
+             [try-again-btn 
+              menu-btn 
+              score-label
+              score-txt
+              last-score-label
+              last-score-txt ]) ]
     (f.merge!
       me 
       {
