@@ -15,12 +15,11 @@
 
 (fn draw [me] 
   (gfx.origin)
-  (each [_ c (ipairs me.children)] (c:draw))
-  )
+  (each [_ c (ipairs me.children)] (c:draw)))
 
 
 (fn load-settings [me]
-  (let [(ok val) (pcall #(fennel.dofile (.. "./game/scenes/title-ui-data.fnl")))]
+  (let [(ok val) (pcall #(fennel.dofile (.. "./game/scenes/.title-ui-nowatch.fnl")))]
     (when ok
       (each [k v (pairs val)]
         (merge! (. me.ui-merge k) v)))

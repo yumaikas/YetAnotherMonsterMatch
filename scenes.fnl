@@ -1,7 +1,8 @@
 (local {: view } (require :fennel))
 (local data {})
 
-{:get (fn [name] (. data name))
+{
+ :get (fn [name] (. data name))
  :set (fn [name val] (tset data name val))
  :switch (fn [me name] 
            (let [s (. data name)]

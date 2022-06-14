@@ -1,6 +1,7 @@
 (import-macros { : imp : req : += : -= : *= : unless } :m)
 (imp v f flux assets fennel scenes)
 (req options :game.systems.options)
+(req {: view } :fennel)
 
 (local gfx love.graphics)
 
@@ -38,10 +39,15 @@
 (fn love.load [] 
   (let [(sx sy) (love.window.getSafeArea)]
     (set init-off [sx sy]))
+  (print "")
    
   (each [_ p (ipairs (love.filesystem.getDirectoryItems "game/scenes"))]
-    (let [(_ _ name) (p:find "([-%w]+)%.fnl$")]
-      (scenes.set name (require (.. "game.scenes." name)))))
+    (let [(_ _ name) (p:find "([-%w%.]+)%.fnl$")]
+      (match (name:find "^%.")
+        (_ _ found) (print (view [found name]))
+        nil (do
+              (print name)
+              (scenes.set name (require (.. "game.scenes." name)))))))
 
   ; Make these configurable?
   (gfx.setLineStyle :smooth)
@@ -49,9 +55,10 @@
   (gfx.setLineJoin :none)
   (gfx.setLineWidth 2)
 
+  (scenes.debug)
   (let [start (scenes.get :title)]
-  (set MODE (start.make true)
-       )))
+    (set MODE (start.make true)))
+  )
 
 (fn love.draw []
 
