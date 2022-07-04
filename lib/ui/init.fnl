@@ -100,6 +100,8 @@
   )))
 
 (fn make-layer [layer]
+  ; Filter out nils
+  (f.filter.i! layer #(values $))
   (check (f.all? layer is-mine?) "Element constructed outside of module found!")
   (each-in child layer
     (when (and child.code child.code.layout)

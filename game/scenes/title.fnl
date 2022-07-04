@@ -3,6 +3,7 @@
 (req { : view } :fennel)
 
 (req fennel :fennel)
+(req progress :game.systems.progressdb)
 
 (req { : merge! } :f)
 
@@ -31,21 +32,19 @@
   (when (. love.keys.justPressed :r)
     (load-settings me)))
 
-
 (fn make []
   (let [
         me {}
+        progress (progress.get)
         start-btn (menu.button [95 206] assets.big-font "QUICK" (fn [] (scenes.switch me :classic)))
         story-btn (menu.button [130 140] assets.big-font "STORY" (fn [] (scenes.switch me :story-base)))
         options-btn (menu.button [170 333] assets.big-font "OPTIONS" (fn [] (scenes.switch me :options)))
-        ui (ui.make-layer [
-                           (menu.text [30 30] assets.title-font [
-                                                                 [1 1 0] "Y"
-                                                                 [1 0.5 0.2] "A"
-                                                                 [1 0.47 1] "M"
-                                                                 [0.7 0.7 0.7] "M"
-                                                                 ] )
-                           start-btn
+        title-txt (menu.text [30 30] assets.title-font [ [0 1 0] "Zeke's\n"
+                                                         [1 0.5 0.2] "Zoodle\n"
+                                                         [1 0.47 1] "Incident"] )
+
+        ui (ui.make-layer [title-txt
+                           (when progress.modes.quick start-btn)
                            story-btn
                            options-btn
                            ])

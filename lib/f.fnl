@@ -75,21 +75,6 @@
             (when (and (>= i idx)) v))))
 
 
-(fn tests! [] 
-  (print "")
-  (assert! (function? #(+ 1 2)) "#() is not detected as a function!")
-  (assert! (table? {}) "{} is not detected as a table!")
-  (assert! (table? []) "[] is not detected as a table!")
-  (assert! (string? :str) ":str is not detected as a string!")
-  (assert! (all? [1 2 3] number?) "all? isn't working?")
-  (assert! (any? [1 2 3] number?) "any? isn't working 1")
-  (assert! (not (any? [true "foo"] number?)) "all? isn't working?")
-  (assert! (any? [true "foo"] boolean?) "any? isn't working 2")
-  (assert! (any? ["foo" true] boolean?) "any? isn't working 3")
-  (assert! (= 2 (find [1 2 3] even?)) "Didn't find 2 via even? !")
-  (even? {}))
-
-(tests!)
 
 (local {: view} (require :fennel))
 (fn pp [x] (print (view x)))
@@ -158,10 +143,47 @@
               (set vstate i)
               v)))))
 
+
 (fn merge! [to from]
+  (assert (table? to) "Can only merge! to tables")
+  (assert (table? from) "Can only merge! from tables")
   (each [k v (pairs from)]
-    (tset to k v))
+    (if
+      (and (table? v) (table? (. to k)))
+      (merge! (. to k) v)
+      (tset to k v)))
   to)
+
+(fn tests! [] 
+  (print "")
+  (assert! (function? #(+ 1 2)) "#() is not detected as a function!")
+  (assert! (table? {}) "{} is not detected as a table!")
+  (assert! (table? []) "[] is not detected as a table!")
+  (assert! (string? :str) ":str is not detected as a string!")
+  (assert! (all? [1 2 3] number?) "all? isn't working?")
+  (assert! (any? [1 2 3] number?) "any? isn't working 1")
+  (assert! (not (any? [true "foo"] number?)) "all? isn't working?")
+  (assert! (any? [true "foo"] boolean?) "any? isn't working 2")
+  (assert! (any? ["foo" true] boolean?) "any? isn't working 3")
+  (assert! (= 2 (find [1 2 3] even?)) "Didn't find 2 via even? !")
+  (assert! (match 
+              (merge! 
+                { :a { :a1 1 }} 
+                { :a { :a2 2 } :b "three" }
+                ) 
+              {:a { :a1 1 :a2 2 } :b "three" } true
+              ) "Merge test 1 failed!")
+  (assert! (match 
+              (merge! 
+                { :a { :a1 1 }} 
+                { :a { :a1 2 } :b "three" }
+                ) 
+              {:a { :a1 2 } :b "three" } true
+              ) "Merge test 2 failed!")
+
+  )
+
+(tests!)
 
 {
  : pp
